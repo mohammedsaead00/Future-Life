@@ -1,0 +1,412 @@
+2026-03-02 00:56:40.171 +02:00 [INF] Executed DbCommand (670ms) [Parameters=[], CommandType='"Text"', CommandTimeout='60']
+CREATE DATABASE [FutureLifeDb];
+2026-03-02 00:56:40.456 +02:00 [INF] Executed DbCommand (136ms) [Parameters=[], CommandType='"Text"', CommandTimeout='60']
+IF SERVERPROPERTY('EngineEdition') <> 5
+BEGIN
+    ALTER DATABASE [FutureLifeDb] SET READ_COMMITTED_SNAPSHOT ON;
+END;
+2026-03-02 00:56:40.482 +02:00 [INF] Executed DbCommand (8ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-03-02 00:56:40.489 +02:00 [INF] Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+2026-03-02 00:56:40.540 +02:00 [INF] Executed DbCommand (41ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_getapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session', @LockMode = 'Exclusive';
+SELECT @result
+2026-03-02 00:56:40.618 +02:00 [INF] Executed DbCommand (8ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+BEGIN
+    CREATE TABLE [__EFMigrationsHistory] (
+        [MigrationId] nvarchar(150) NOT NULL,
+        [ProductVersion] nvarchar(32) NOT NULL,
+        CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+    );
+END;
+2026-03-02 00:56:40.629 +02:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-03-02 00:56:40.633 +02:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2026-03-02 00:56:40.652 +02:00 [INF] Executed DbCommand (15ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [MigrationId], [ProductVersion]
+FROM [__EFMigrationsHistory]
+ORDER BY [MigrationId];
+2026-03-02 00:56:40.665 +02:00 [INF] Applying migration '20260301225133_InitialCreate'.
+2026-03-02 00:56:40.715 +02:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [ExchangeRates] (
+    [Id] int NOT NULL IDENTITY,
+    [CurrencyCode] nvarchar(10) NOT NULL,
+    [RateToUsd] decimal(18,6) NOT NULL,
+    [UpdatedAt] datetime2 NOT NULL,
+    CONSTRAINT [PK_ExchangeRates] PRIMARY KEY ([Id])
+);
+2026-03-02 00:56:40.720 +02:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [Users] (
+    [Id] int NOT NULL IDENTITY,
+    [FullName] nvarchar(100) NOT NULL,
+    [Email] nvarchar(200) NOT NULL,
+    [PasswordHash] nvarchar(max) NOT NULL,
+    [PreferredCurrency] nvarchar(max) NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    [UpdatedAt] datetime2 NOT NULL,
+    CONSTRAINT [PK_Users] PRIMARY KEY ([Id])
+);
+2026-03-02 00:56:40.726 +02:00 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [Profiles] (
+    [Id] int NOT NULL IDENTITY,
+    [Name] nvarchar(150) NOT NULL,
+    [Age] int NOT NULL,
+    [Gender] nvarchar(max) NULL,
+    [Country] nvarchar(max) NULL,
+    [CurrentSavings] decimal(18,2) NOT NULL,
+    [MonthlyIncome] decimal(18,2) NOT NULL,
+    [MonthlyExpenses] decimal(18,2) NOT NULL,
+    [InvestmentReturnRate] decimal(5,4) NOT NULL,
+    [InflationRate] decimal(5,4) NOT NULL,
+    [Currency] nvarchar(max) NOT NULL,
+    [CurrentSalary] decimal(18,2) NOT NULL,
+    [AnnualSalaryGrowthRate] decimal(5,4) NOT NULL,
+    [PromotionProbability] decimal(5,4) NOT NULL,
+    [PromotionSalaryBoost] decimal(5,4) NOT NULL,
+    [JobTitle] nvarchar(max) NULL,
+    [SleepHoursPerNight] int NOT NULL,
+    [ExerciseDaysPerWeek] int NOT NULL,
+    [StressLevel] int NOT NULL,
+    [BMI] decimal(5,2) NOT NULL,
+    [SocialInteractionsPerWeek] int NOT NULL,
+    [CloseFriendsCount] int NOT NULL,
+    [CommunityEngagementScore] int NOT NULL,
+    [UserId] int NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    [UpdatedAt] datetime2 NOT NULL,
+    CONSTRAINT [PK_Profiles] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_Profiles_Users_UserId] FOREIGN KEY ([UserId]) REFERENCES [Users] ([Id]) ON DELETE CASCADE
+);
+2026-03-02 00:56:40.730 +02:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [SimulationResults] (
+    [Id] int NOT NULL IDENTITY,
+    [ProfileId] int NOT NULL,
+    [ProjectionYears] int NOT NULL,
+    [Currency] nvarchar(max) NOT NULL,
+    [ResultJson] nvarchar(max) NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    CONSTRAINT [PK_SimulationResults] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_SimulationResults_Profiles_ProfileId] FOREIGN KEY ([ProfileId]) REFERENCES [Profiles] ([Id]) ON DELETE CASCADE
+);
+2026-03-02 00:56:40.783 +02:00 [INF] Executed DbCommand (50ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'CurrencyCode', N'RateToUsd', N'UpdatedAt') AND [object_id] = OBJECT_ID(N'[ExchangeRates]'))
+    SET IDENTITY_INSERT [ExchangeRates] ON;
+INSERT INTO [ExchangeRates] ([Id], [CurrencyCode], [RateToUsd], [UpdatedAt])
+VALUES (1, N'USD', 1.0, '2026-03-02T00:00:00.0000000Z'),
+(2, N'EGP', 0.0204, '2026-03-02T00:00:00.0000000Z'),
+(3, N'SAR', 0.2667, '2026-03-02T00:00:00.0000000Z'),
+(4, N'AED', 0.2723, '2026-03-02T00:00:00.0000000Z'),
+(5, N'KWD', 3.2614, '2026-03-02T00:00:00.0000000Z'),
+(6, N'QAR', 0.2747, '2026-03-02T00:00:00.0000000Z');
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'CurrencyCode', N'RateToUsd', N'UpdatedAt') AND [object_id] = OBJECT_ID(N'[ExchangeRates]'))
+    SET IDENTITY_INSERT [ExchangeRates] OFF;
+2026-03-02 00:56:40.808 +02:00 [INF] Executed DbCommand (22ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX [IX_ExchangeRates_CurrencyCode] ON [ExchangeRates] ([CurrencyCode]);
+2026-03-02 00:56:40.811 +02:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX [IX_Profiles_UserId] ON [Profiles] ([UserId]);
+2026-03-02 00:56:40.814 +02:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX [IX_SimulationResults_ProfileId] ON [SimulationResults] ([ProfileId]);
+2026-03-02 00:56:40.817 +02:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX [IX_Users_Email] ON [Users] ([Email]);
+2026-03-02 00:56:40.821 +02:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20260301225133_InitialCreate', N'10.0.3');
+2026-03-02 00:56:40.829 +02:00 [INF] Executed DbCommand (5ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_releaseapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session';
+SELECT @result
+2026-03-02 00:56:52.582 +02:00 [INF] Executed DbCommand (18ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-03-02 00:56:52.641 +02:00 [INF] Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+2026-03-02 00:56:52.674 +02:00 [INF] Executed DbCommand (29ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_getapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session', @LockMode = 'Exclusive';
+SELECT @result
+2026-03-02 00:56:52.758 +02:00 [INF] Executed DbCommand (7ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+BEGIN
+    CREATE TABLE [__EFMigrationsHistory] (
+        [MigrationId] nvarchar(150) NOT NULL,
+        [ProductVersion] nvarchar(32) NOT NULL,
+        CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+    );
+END;
+2026-03-02 00:56:52.769 +02:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-03-02 00:56:52.772 +02:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2026-03-02 00:56:52.780 +02:00 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [MigrationId], [ProductVersion]
+FROM [__EFMigrationsHistory]
+ORDER BY [MigrationId];
+2026-03-02 00:56:52.792 +02:00 [INF] No migrations were applied. The database is already up to date.
+2026-03-02 00:56:52.798 +02:00 [INF] Executed DbCommand (5ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_releaseapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session';
+SELECT @result
+2026-03-02 00:56:52.818 +02:00 [INF] User profile is available. Using 'C:\Users\moham\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-03-02 00:56:52.903 +02:00 [FTL] Application startup exception
+System.InvalidOperationException: Cannot resolve scoped service 'FutureLife.API.Helpers.JwtHelper' from root provider.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteValidator.ValidateResolution(ServiceCallSite callSite, IServiceScope scope, IServiceScope rootScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.ConstructorMatcher.CreateInstance(IServiceProvider provider)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateInstance(IServiceProvider provider, Type instanceType, Object[] parameters)
+   at Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.ReflectionMiddlewareBinder.CreateMiddleware(RequestDelegate next)
+   at Microsoft.AspNetCore.Builder.ApplicationBuilder.Build()
+   at Microsoft.AspNetCore.Builder.ApplicationBuilder.Build()
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+2026-03-02 00:56:52.918 +02:00 [ERR] Hosting failed to start
+System.InvalidOperationException: Cannot resolve scoped service 'FutureLife.API.Helpers.JwtHelper' from root provider.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteValidator.ValidateResolution(ServiceCallSite callSite, IServiceScope scope, IServiceScope rootScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.ConstructorMatcher.CreateInstance(IServiceProvider provider)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateInstance(IServiceProvider provider, Type instanceType, Object[] parameters)
+   at Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.ReflectionMiddlewareBinder.CreateMiddleware(RequestDelegate next)
+   at Microsoft.AspNetCore.Builder.ApplicationBuilder.Build()
+   at Microsoft.AspNetCore.Builder.ApplicationBuilder.Build()
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__14_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+2026-03-02 00:58:07.387 +02:00 [INF] Executed DbCommand (17ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-03-02 00:58:07.455 +02:00 [INF] Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+2026-03-02 00:58:07.486 +02:00 [INF] Executed DbCommand (26ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_getapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session', @LockMode = 'Exclusive';
+SELECT @result
+2026-03-02 00:58:07.561 +02:00 [INF] Executed DbCommand (5ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+BEGIN
+    CREATE TABLE [__EFMigrationsHistory] (
+        [MigrationId] nvarchar(150) NOT NULL,
+        [ProductVersion] nvarchar(32) NOT NULL,
+        CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+    );
+END;
+2026-03-02 00:58:07.571 +02:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-03-02 00:58:07.574 +02:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2026-03-02 00:58:07.582 +02:00 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [MigrationId], [ProductVersion]
+FROM [__EFMigrationsHistory]
+ORDER BY [MigrationId];
+2026-03-02 00:58:07.647 +02:00 [INF] No migrations were applied. The database is already up to date.
+2026-03-02 00:58:07.670 +02:00 [INF] Executed DbCommand (5ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_releaseapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session';
+SELECT @result
+2026-03-02 00:58:07.691 +02:00 [INF] User profile is available. Using 'C:\Users\moham\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-03-02 00:58:07.740 +02:00 [FTL] Application startup exception
+System.InvalidOperationException: Cannot resolve scoped service 'FutureLife.API.Helpers.JwtHelper' from root provider.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteValidator.ValidateResolution(ServiceCallSite callSite, IServiceScope scope, IServiceScope rootScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.ConstructorMatcher.CreateInstance(IServiceProvider provider)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateInstance(IServiceProvider provider, Type instanceType, Object[] parameters)
+   at Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.ReflectionMiddlewareBinder.CreateMiddleware(RequestDelegate next)
+   at Microsoft.AspNetCore.Builder.ApplicationBuilder.Build()
+   at Microsoft.AspNetCore.Builder.ApplicationBuilder.Build()
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+2026-03-02 00:58:07.756 +02:00 [ERR] Hosting failed to start
+System.InvalidOperationException: Cannot resolve scoped service 'FutureLife.API.Helpers.JwtHelper' from root provider.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteValidator.ValidateResolution(ServiceCallSite callSite, IServiceScope scope, IServiceScope rootScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.ConstructorMatcher.CreateInstance(IServiceProvider provider)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateInstance(IServiceProvider provider, Type instanceType, Object[] parameters)
+   at Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.ReflectionMiddlewareBinder.CreateMiddleware(RequestDelegate next)
+   at Microsoft.AspNetCore.Builder.ApplicationBuilder.Build()
+   at Microsoft.AspNetCore.Builder.ApplicationBuilder.Build()
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__14_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+2026-03-02 00:59:46.666 +02:00 [INF] Executed DbCommand (17ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-03-02 00:59:46.723 +02:00 [INF] Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+2026-03-02 00:59:46.752 +02:00 [INF] Executed DbCommand (25ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_getapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session', @LockMode = 'Exclusive';
+SELECT @result
+2026-03-02 00:59:46.829 +02:00 [INF] Executed DbCommand (5ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+BEGIN
+    CREATE TABLE [__EFMigrationsHistory] (
+        [MigrationId] nvarchar(150) NOT NULL,
+        [ProductVersion] nvarchar(32) NOT NULL,
+        CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+    );
+END;
+2026-03-02 00:59:46.841 +02:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-03-02 00:59:46.843 +02:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2026-03-02 00:59:46.851 +02:00 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [MigrationId], [ProductVersion]
+FROM [__EFMigrationsHistory]
+ORDER BY [MigrationId];
+2026-03-02 00:59:46.860 +02:00 [INF] No migrations were applied. The database is already up to date.
+2026-03-02 00:59:46.865 +02:00 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_releaseapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session';
+SELECT @result
+2026-03-02 00:59:46.882 +02:00 [INF] User profile is available. Using 'C:\Users\moham\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-03-02 00:59:46.919 +02:00 [FTL] Application startup exception
+System.InvalidOperationException: Cannot resolve scoped service 'FutureLife.API.Helpers.JwtHelper' from root provider.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteValidator.ValidateResolution(ServiceCallSite callSite, IServiceScope scope, IServiceScope rootScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.ConstructorMatcher.CreateInstance(IServiceProvider provider)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateInstance(IServiceProvider provider, Type instanceType, Object[] parameters)
+   at Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.ReflectionMiddlewareBinder.CreateMiddleware(RequestDelegate next)
+   at Microsoft.AspNetCore.Builder.ApplicationBuilder.Build()
+   at Microsoft.AspNetCore.Builder.ApplicationBuilder.Build()
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+2026-03-02 00:59:46.934 +02:00 [ERR] Hosting failed to start
+System.InvalidOperationException: Cannot resolve scoped service 'FutureLife.API.Helpers.JwtHelper' from root provider.
+   at Microsoft.Extensions.DependencyInjection.ServiceLookup.CallSiteValidator.ValidateResolution(ServiceCallSite callSite, IServiceScope scope, IServiceScope rootScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(ServiceIdentifier serviceIdentifier, ServiceProviderEngineScope serviceProviderEngineScope)
+   at Microsoft.Extensions.DependencyInjection.ServiceProvider.GetService(Type serviceType)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.ConstructorMatcher.CreateInstance(IServiceProvider provider)
+   at Microsoft.Extensions.DependencyInjection.ActivatorUtilities.CreateInstance(IServiceProvider provider, Type instanceType, Object[] parameters)
+   at Microsoft.AspNetCore.Builder.UseMiddlewareExtensions.ReflectionMiddlewareBinder.CreateMiddleware(RequestDelegate next)
+   at Microsoft.AspNetCore.Builder.ApplicationBuilder.Build()
+   at Microsoft.AspNetCore.Builder.ApplicationBuilder.Build()
+   at Microsoft.AspNetCore.Hosting.GenericWebHostService.StartAsync(CancellationToken cancellationToken)
+   at Microsoft.Extensions.Hosting.Internal.Host.<StartAsync>b__14_1(IHostedService service, CancellationToken token)
+   at Microsoft.Extensions.Hosting.Internal.Host.ForeachService[T](IEnumerable`1 services, CancellationToken token, Boolean concurrent, Boolean abortOnFirstException, List`1 exceptions, Func`3 operation)
+2026-03-02 01:00:41.603 +02:00 [INF] Executed DbCommand (21ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-03-02 01:00:41.662 +02:00 [INF] Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+2026-03-02 01:00:41.692 +02:00 [INF] Executed DbCommand (25ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_getapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session', @LockMode = 'Exclusive';
+SELECT @result
+2026-03-02 01:00:41.766 +02:00 [INF] Executed DbCommand (4ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+BEGIN
+    CREATE TABLE [__EFMigrationsHistory] (
+        [MigrationId] nvarchar(150) NOT NULL,
+        [ProductVersion] nvarchar(32) NOT NULL,
+        CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+    );
+END;
+2026-03-02 01:00:41.776 +02:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-03-02 01:00:41.779 +02:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2026-03-02 01:00:41.790 +02:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [MigrationId], [ProductVersion]
+FROM [__EFMigrationsHistory]
+ORDER BY [MigrationId];
+2026-03-02 01:00:41.799 +02:00 [INF] No migrations were applied. The database is already up to date.
+2026-03-02 01:00:41.804 +02:00 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_releaseapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session';
+SELECT @result
+2026-03-02 01:00:41.825 +02:00 [INF] User profile is available. Using 'C:\Users\moham\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-03-02 01:00:41.884 +02:00 [INF] Now listening on: http://localhost:5087
+2026-03-02 01:00:41.886 +02:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-03-02 01:00:41.887 +02:00 [INF] Hosting environment: Development
+2026-03-02 01:00:41.888 +02:00 [INF] Content root path: F:\Future life\FutureLife.API
+2026-03-02 01:05:59.049 +02:00 [INF] Executed DbCommand (20ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-03-02 01:05:59.124 +02:00 [INF] Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+2026-03-02 01:05:59.161 +02:00 [INF] Executed DbCommand (32ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_getapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session', @LockMode = 'Exclusive';
+SELECT @result
+2026-03-02 01:05:59.243 +02:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+BEGIN
+    CREATE TABLE [__EFMigrationsHistory] (
+        [MigrationId] nvarchar(150) NOT NULL,
+        [ProductVersion] nvarchar(32) NOT NULL,
+        CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+    );
+END;
+2026-03-02 01:05:59.253 +02:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-03-02 01:05:59.256 +02:00 [INF] Executed DbCommand (0ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2026-03-02 01:05:59.265 +02:00 [INF] Executed DbCommand (5ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [MigrationId], [ProductVersion]
+FROM [__EFMigrationsHistory]
+ORDER BY [MigrationId];
+2026-03-02 01:05:59.277 +02:00 [INF] No migrations were applied. The database is already up to date.
+2026-03-02 01:05:59.284 +02:00 [INF] Executed DbCommand (5ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_releaseapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session';
+SELECT @result
+2026-03-02 01:05:59.304 +02:00 [INF] User profile is available. Using 'C:\Users\moham\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-03-02 01:05:59.361 +02:00 [INF] Now listening on: http://localhost:5087
+2026-03-02 01:05:59.363 +02:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-03-02 01:05:59.365 +02:00 [INF] Hosting environment: Development
+2026-03-02 01:05:59.366 +02:00 [INF] Content root path: F:\Future life\FutureLIfe.API
+2026-03-02 01:06:03.653 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5087/ - null null
+2026-03-02 01:06:03.716 +02:00 [INF] HTTP GET / responded 404 in 34.8836 ms
+2026-03-02 01:06:03.729 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5087/ - 404 0 null 77.5309ms
+2026-03-02 01:06:03.738 +02:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5087/, Response status code: 404
+2026-03-02 01:11:09.668 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5087/Swagger/index - null null
+2026-03-02 01:11:09.680 +02:00 [INF] HTTP GET /Swagger/index responded 404 in 4.9287 ms
+2026-03-02 01:11:09.683 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5087/Swagger/index - 404 0 null 14.4722ms
+2026-03-02 01:11:09.690 +02:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5087/Swagger/index, Response status code: 404
+2026-03-02 01:11:14.140 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5087/Swagger/index - null null
+2026-03-02 01:11:14.156 +02:00 [INF] HTTP GET /Swagger/index responded 404 in 9.4836 ms
+2026-03-02 01:11:14.159 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5087/Swagger/index - 404 0 null 18.1901ms
+2026-03-02 01:11:14.164 +02:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5087/Swagger/index, Response status code: 404
+2026-03-02 01:11:18.039 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5087/Swagger/ - null null
+2026-03-02 01:11:18.044 +02:00 [INF] HTTP GET /Swagger/ responded 404 in 0.1701 ms
+2026-03-02 01:11:18.046 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5087/Swagger/ - 404 0 null 7.0075ms
+2026-03-02 01:11:18.051 +02:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5087/Swagger/, Response status code: 404
+2026-03-02 01:11:23.618 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5087/Swagger - null null
+2026-03-02 01:11:23.625 +02:00 [INF] HTTP GET /Swagger responded 404 in 0.1327 ms
+2026-03-02 01:11:23.629 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5087/Swagger - 404 0 null 11.008ms
+2026-03-02 01:11:23.634 +02:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5087/Swagger, Response status code: 404
+2026-03-02 01:11:42.418 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5087/exchange-rates - null null
+2026-03-02 01:11:42.429 +02:00 [INF] Executing endpoint 'FutureLife.API.Controllers.ExchangeRatesController.GetAll (FutureLife.API)'
+2026-03-02 01:11:42.461 +02:00 [INF] Route matched with {action = "GetAll", controller = "ExchangeRates"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetAll() on controller FutureLife.API.Controllers.ExchangeRatesController (FutureLife.API).
+2026-03-02 01:11:42.808 +02:00 [INF] Executed DbCommand (28ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [e].[Id], [e].[CurrencyCode], [e].[RateToUsd], [e].[UpdatedAt]
+FROM [ExchangeRates] AS [e]
+2026-03-02 01:11:42.850 +02:00 [INF] Executing OkObjectResult, writing value of type '<>f__AnonymousType5`3[[System.Boolean, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.Object, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-03-02 01:11:42.909 +02:00 [INF] Executed action FutureLife.API.Controllers.ExchangeRatesController.GetAll (FutureLife.API) in 441.3078ms
+2026-03-02 01:11:42.911 +02:00 [INF] Executed endpoint 'FutureLife.API.Controllers.ExchangeRatesController.GetAll (FutureLife.API)'
+2026-03-02 01:11:42.914 +02:00 [INF] HTTP GET /exchange-rates responded 200 in 486.9035 ms
+2026-03-02 01:11:42.923 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5087/exchange-rates - 200 null application/json; charset=utf-8 504.0553ms
+2026-03-02 01:11:42.972 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5087/favicon.ico - null null
+2026-03-02 01:11:42.974 +02:00 [INF] HTTP GET /favicon.ico responded 404 in 0.0853 ms
+2026-03-02 01:11:42.976 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5087/favicon.ico - 404 0 null 4.8768ms
+2026-03-02 01:11:42.980 +02:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5087/favicon.ico, Response status code: 404
+2026-03-02 01:12:02.614 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5087/auth/register - null null
+2026-03-02 01:12:02.619 +02:00 [INF] Executing endpoint '405 HTTP Method Not Supported'
+2026-03-02 01:12:02.621 +02:00 [INF] Executed endpoint '405 HTTP Method Not Supported'
+2026-03-02 01:12:02.623 +02:00 [INF] HTTP GET /auth/register responded 405 in 3.4870 ms
+2026-03-02 01:12:02.626 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5087/auth/register - 405 0 null 11.5132ms
+2026-03-02 01:12:25.922 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5087/auth/login - null null
+2026-03-02 01:12:25.930 +02:00 [INF] Executing endpoint '405 HTTP Method Not Supported'
+2026-03-02 01:12:25.932 +02:00 [INF] Executed endpoint '405 HTTP Method Not Supported'
+2026-03-02 01:12:25.933 +02:00 [INF] HTTP GET /auth/login responded 405 in 3.7974 ms
+2026-03-02 01:12:25.937 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5087/auth/login - 405 0 null 14.61ms
+2026-03-02 01:12:43.949 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5087/auth/me - null null
+2026-03-02 01:12:43.956 +02:00 [INF] Executing endpoint 'FutureLife.API.Controllers.AuthController.Me (FutureLife.API)'
+2026-03-02 01:12:43.970 +02:00 [INF] Route matched with {action = "Me", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Me() on controller FutureLife.API.Controllers.AuthController (FutureLife.API).
+2026-03-02 01:12:43.978 +02:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType6`2[[System.Boolean, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-03-02 01:12:43.985 +02:00 [INF] Executed action FutureLife.API.Controllers.AuthController.Me (FutureLife.API) in 12.6675ms
+2026-03-02 01:12:43.987 +02:00 [INF] Executed endpoint 'FutureLife.API.Controllers.AuthController.Me (FutureLife.API)'
+2026-03-02 01:12:43.989 +02:00 [INF] HTTP GET /auth/me responded 401 in 32.8401 ms
+2026-03-02 01:12:43.992 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5087/auth/me - 401 null application/json; charset=utf-8 43.2285ms
+2026-03-02 01:13:09.831 +02:00 [INF] Request starting HTTP/1.1 GET http://localhost:5087/profiles - null null
+2026-03-02 01:13:09.837 +02:00 [INF] Executing endpoint 'FutureLife.API.Controllers.ProfilesController.GetAll (FutureLife.API)'
+2026-03-02 01:13:09.847 +02:00 [INF] Route matched with {action = "GetAll", controller = "Profiles"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetAll() on controller FutureLife.API.Controllers.ProfilesController (FutureLife.API).
+2026-03-02 01:13:09.851 +02:00 [INF] Executing UnauthorizedObjectResult, writing value of type '<>f__AnonymousType6`2[[System.Boolean, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e],[System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]'.
+2026-03-02 01:13:09.853 +02:00 [INF] Executed action FutureLife.API.Controllers.ProfilesController.GetAll (FutureLife.API) in 3.8388ms
+2026-03-02 01:13:09.856 +02:00 [INF] Executed endpoint 'FutureLife.API.Controllers.ProfilesController.GetAll (FutureLife.API)'
+2026-03-02 01:13:09.857 +02:00 [INF] HTTP GET /profiles responded 401 in 20.3150 ms
+2026-03-02 01:13:09.860 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5087/profiles - 401 null application/json; charset=utf-8 28.2248ms
+2026-03-02 01:15:13.980 +02:00 [INF] Application is shutting down...

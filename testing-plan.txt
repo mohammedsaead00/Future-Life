@@ -1,0 +1,186 @@
+====================================================
+  FUTURELIFE API - TESTING PLAN
+  Base URL: http://localhost:5089
+====================================================
+
+NOTE: الـ port ممكن يختلف - اتأكد من launchSettings.json
+NOTE: كل request محتاج Token ما عدا /exchange-rates و /auth/*
+
+----------------------------------------------------
+STEP 0 - تشغيل السيرفر
+----------------------------------------------------
+dotnet run
+
+----------------------------------------------------
+STEP 1 - Exchange Rates (بدون Token)
+----------------------------------------------------
+GET http://localhost:5089/exchange-rates
+
+المتوقع:
+{
+  "success": true,
+  "data": [
+    { "currencyCode": "USD", "rateToUsd": 1 },
+    { "currencyCode": "EGP", "rateToUsd": 0.0204 },
+    ...
+  ]
+}
+
+----------------------------------------------------
+STEP 2 - Register
+----------------------------------------------------
+POST http://localhost:5089/auth/register
+Content-Type: application/json
+
+Body:
+{
+  "fullName": "Mohamed",
+  "email": "mo@test.com",
+  "password": "123456",
+  "preferredCurrency": "EGP"
+}
+
+المتوقع: token + user data
+
+----------------------------------------------------
+STEP 3 - Login
+----------------------------------------------------
+POST http://localhost:5089/auth/login
+Content-Type: application/json
+
+Body:
+{
+  "email": "mo@test.com",
+  "password": "123456"
+}
+
+>>> احفظ الـ token من هنا وحطه في كل request جاي
+
+----------------------------------------------------
+STEP 4 - Get Me
+----------------------------------------------------
+GET http://localhost:5089/auth/me
+Authorization: Bearer YOUR_TOKEN_HERE
+
+----------------------------------------------------
+STEP 5 - Update User
+----------------------------------------------------
+PUT http://localhost:5089/users/me
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+
+Body:
+{
+  "fullName": "Mohamed Updated",
+  "preferredCurrency": "SAR"
+}
+
+----------------------------------------------------
+STEP 6 - Create Profile
+----------------------------------------------------
+POST http://localhost:5089/profiles
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+
+Body:
+{
+  "name": "My Life Plan",
+  "age": 28,
+  "gender": "Male",
+  "country": "Egypt",
+  "currentSavings": 50000,
+  "monthlyIncome": 15000,
+  "monthlyExpenses": 8000,
+  "investmentReturnRate": 0.07,
+  "inflationRate": 0.03,
+  "currency": "EGP",
+  "currentSalary": 15000,
+  "annualSalaryGrowthRate": 0.05,
+  "promotionProbability": 0.15,
+  "promotionSalaryBoost": 0.20,
+  "jobTitle": "Software Engineer",
+  "sleepHoursPerNight": 7,
+  "exerciseDaysPerWeek": 3,
+  "stressLevel": 6,
+  "bmi": 24.5,
+  "socialInteractionsPerWeek": 5,
+  "closeFriendsCount": 4,
+  "communityEngagementScore": 6
+}
+
+>>> احفظ الـ id من الرد (هنفترض انه 1)
+
+----------------------------------------------------
+STEP 7 - Get All Profiles
+----------------------------------------------------
+GET http://localhost:5089/profiles
+Authorization: Bearer YOUR_TOKEN_HERE
+
+----------------------------------------------------
+STEP 8 - Get Profile By ID
+----------------------------------------------------
+GET http://localhost:5089/profiles/1
+Authorization: Bearer YOUR_TOKEN_HERE
+
+----------------------------------------------------
+STEP 9 - Run Simulation (الاهم!)
+----------------------------------------------------
+POST http://localhost:5089/profiles/1/simulate
+Authorization: Bearer YOUR_TOKEN_HERE
+Content-Type: application/json
+
+Body:
+{
+  "projectionYears": 10,
+  "currency": "EGP"
+}
+
+المتوقع: projection كاملة تشمل:
+  - Finance: savings + netWorth per year
+  - Career:  salary growth + promotions
+  - Health:  energyScore + burnoutRisk
+  - Social:  isolationRisk + influenceGrowthIndex
+
+----------------------------------------------------
+STEP 10 - Get Simulation Results
+----------------------------------------------------
+GET http://localhost:5089/profiles/1/results
+Authorization: Bearer YOUR_TOKEN_HERE
+
+----------------------------------------------------
+STEP 11 - Delete Profile
+----------------------------------------------------
+DELETE http://localhost:5089/profiles/1
+Authorization: Bearer YOUR_TOKEN_HERE
+
+----------------------------------------------------
+STEP 12 - Test Error Handling
+----------------------------------------------------
+GET http://localhost:5089/profiles/999
+Authorization: Bearer YOUR_TOKEN_HERE
+
+المتوقع:
+{
+  "success": false,
+  "message": "Profile not found."
+}
+
+----------------------------------------------------
+STEP 13 - Test Unauthorized
+----------------------------------------------------
+GET http://localhost:5089/profiles
+
+المتوقع:
+{
+  "success": false,
+  "message": "Unauthorized."
+}
+
+====================================================
+  TOOLS يمكن استخدامها للاختبار
+====================================================
+1. curl (command line)           - موجود بالفعل
+2. Postman                       - https://postman.com
+3. Thunder Client (VS Code ext)  - اسهل حاجة
+4. REST Client (VS Code ext)     - ملف .http
+====================================================
