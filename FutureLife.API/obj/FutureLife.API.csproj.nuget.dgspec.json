@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "F:\\Future life\\FutureLIfe.API\\FutureLife.API.csproj": {}
+    "F:\\Future life\\FutureLife.API\\FutureLife.API.csproj": {}
   },
   "projects": {
-    "F:\\Future life\\FutureLIfe.API\\FutureLife.API.csproj": {
+    "F:\\Future life\\FutureLife.API\\FutureLife.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "F:\\Future life\\FutureLIfe.API\\FutureLife.API.csproj",
+        "projectUniqueName": "F:\\Future life\\FutureLife.API\\FutureLife.API.csproj",
         "projectName": "FutureLife.API",
-        "projectPath": "F:\\Future life\\FutureLIfe.API\\FutureLife.API.csproj",
+        "projectPath": "F:\\Future life\\FutureLife.API\\FutureLife.API.csproj",
         "packagesPath": "C:\\Users\\moham\\.nuget\\packages\\",
-        "outputPath": "F:\\Future life\\FutureLIfe.API\\obj\\",
+        "outputPath": "F:\\Future life\\FutureLife.API\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

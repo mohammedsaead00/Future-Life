@@ -168,3 +168,10 @@ F:\Future life\FutureLife.API\obj\Debug\net10.0\refint\FutureLife.API.dll
 F:\Future life\FutureLife.API\obj\Debug\net10.0\FutureLife.API.pdb
 F:\Future life\FutureLife.API\obj\Debug\net10.0\FutureLife.API.genruntimeconfig.cache
 F:\Future life\FutureLife.API\obj\Debug\net10.0\ref\FutureLife.API.dll
+F:\Future life\FutureLife.API\bin\Debug\net10.0\publish\web.config
+F:\Future life\FutureLife.API\bin\Debug\net10.0\publish\appsettings.Development.json
+F:\Future life\FutureLife.API\bin\Debug\net10.0\publish\appsettings.json
+F:\Future life\FutureLife.API\bin\Debug\net10.0\publish\FutureLife.API.deps.json
+F:\Future life\FutureLife.API\bin\Debug\net10.0\publish\FutureLife.API.runtimeconfig.json
+F:\Future life\FutureLife.API\bin\Debug\net10.0\publish\FutureLife.API.staticwebassets.endpoints.json
+F:\Future life\FutureLife.API\obj\Debug\net10.0\FutureLife.API.sourcelink.json

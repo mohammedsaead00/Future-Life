@@ -410,3 +410,116 @@ FROM [ExchangeRates] AS [e]
 2026-03-02 01:13:09.857 +02:00 [INF] HTTP GET /profiles responded 401 in 20.3150 ms
 2026-03-02 01:13:09.860 +02:00 [INF] Request finished HTTP/1.1 GET http://localhost:5087/profiles - 401 null application/json; charset=utf-8 28.2248ms
 2026-03-02 01:15:13.980 +02:00 [INF] Application is shutting down...
+2026-03-02 03:23:17.002 +02:00 [INF] Executed DbCommand (235ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-03-02 03:23:17.074 +02:00 [INF] Acquiring an exclusive lock for migration application. See https://aka.ms/efcore-docs-migrations-lock for more information if this takes too long.
+2026-03-02 03:23:17.309 +02:00 [INF] Executed DbCommand (230ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_getapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session', @LockMode = 'Exclusive';
+SELECT @result
+2026-03-02 03:23:17.851 +02:00 [INF] Executed DbCommand (214ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+IF OBJECT_ID(N'[__EFMigrationsHistory]') IS NULL
+BEGIN
+    CREATE TABLE [__EFMigrationsHistory] (
+        [MigrationId] nvarchar(150) NOT NULL,
+        [ProductVersion] nvarchar(32) NOT NULL,
+        CONSTRAINT [PK___EFMigrationsHistory] PRIMARY KEY ([MigrationId])
+    );
+END;
+2026-03-02 03:23:18.493 +02:00 [INF] Executed DbCommand (204ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-03-02 03:23:18.704 +02:00 [INF] Executed DbCommand (204ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT OBJECT_ID(N'[__EFMigrationsHistory]');
+2026-03-02 03:23:18.962 +02:00 [INF] Executed DbCommand (250ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT [MigrationId], [ProductVersion]
+FROM [__EFMigrationsHistory]
+ORDER BY [MigrationId];
+2026-03-02 03:23:18.993 +02:00 [INF] Applying migration '20260301225133_InitialCreate'.
+2026-03-02 03:23:19.278 +02:00 [INF] Executed DbCommand (212ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [ExchangeRates] (
+    [Id] int NOT NULL IDENTITY,
+    [CurrencyCode] nvarchar(10) NOT NULL,
+    [RateToUsd] decimal(18,6) NOT NULL,
+    [UpdatedAt] datetime2 NOT NULL,
+    CONSTRAINT [PK_ExchangeRates] PRIMARY KEY ([Id])
+);
+2026-03-02 03:23:19.494 +02:00 [INF] Executed DbCommand (212ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [Users] (
+    [Id] int NOT NULL IDENTITY,
+    [FullName] nvarchar(100) NOT NULL,
+    [Email] nvarchar(200) NOT NULL,
+    [PasswordHash] nvarchar(max) NOT NULL,
+    [PreferredCurrency] nvarchar(max) NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    [UpdatedAt] datetime2 NOT NULL,
+    CONSTRAINT [PK_Users] PRIMARY KEY ([Id])
+);
+2026-03-02 03:23:19.728 +02:00 [INF] Executed DbCommand (228ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [Profiles] (
+    [Id] int NOT NULL IDENTITY,
+    [Name] nvarchar(150) NOT NULL,
+    [Age] int NOT NULL,
+    [Gender] nvarchar(max) NULL,
+    [Country] nvarchar(max) NULL,
+    [CurrentSavings] decimal(18,2) NOT NULL,
+    [MonthlyIncome] decimal(18,2) NOT NULL,
+    [MonthlyExpenses] decimal(18,2) NOT NULL,
+    [InvestmentReturnRate] decimal(5,4) NOT NULL,
+    [InflationRate] decimal(5,4) NOT NULL,
+    [Currency] nvarchar(max) NOT NULL,
+    [CurrentSalary] decimal(18,2) NOT NULL,
+    [AnnualSalaryGrowthRate] decimal(5,4) NOT NULL,
+    [PromotionProbability] decimal(5,4) NOT NULL,
+    [PromotionSalaryBoost] decimal(5,4) NOT NULL,
+    [JobTitle] nvarchar(max) NULL,
+    [SleepHoursPerNight] int NOT NULL,
+    [ExerciseDaysPerWeek] int NOT NULL,
+    [StressLevel] int NOT NULL,
+    [BMI] decimal(5,2) NOT NULL,
+    [SocialInteractionsPerWeek] int NOT NULL,
+    [CloseFriendsCount] int NOT NULL,
+    [CommunityEngagementScore] int NOT NULL,
+    [UserId] int NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    [UpdatedAt] datetime2 NOT NULL,
+    CONSTRAINT [PK_Profiles] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_Profiles_Users_UserId] FOREIGN KEY ([UserId]) REFERENCES [Users] ([Id]) ON DELETE CASCADE
+);
+2026-03-02 03:23:19.950 +02:00 [INF] Executed DbCommand (214ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE [SimulationResults] (
+    [Id] int NOT NULL IDENTITY,
+    [ProfileId] int NOT NULL,
+    [ProjectionYears] int NOT NULL,
+    [Currency] nvarchar(max) NOT NULL,
+    [ResultJson] nvarchar(max) NOT NULL,
+    [CreatedAt] datetime2 NOT NULL,
+    CONSTRAINT [PK_SimulationResults] PRIMARY KEY ([Id]),
+    CONSTRAINT [FK_SimulationResults_Profiles_ProfileId] FOREIGN KEY ([ProfileId]) REFERENCES [Profiles] ([Id]) ON DELETE CASCADE
+);
+2026-03-02 03:23:20.231 +02:00 [INF] Executed DbCommand (273ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'CurrencyCode', N'RateToUsd', N'UpdatedAt') AND [object_id] = OBJECT_ID(N'[ExchangeRates]'))
+    SET IDENTITY_INSERT [ExchangeRates] ON;
+INSERT INTO [ExchangeRates] ([Id], [CurrencyCode], [RateToUsd], [UpdatedAt])
+VALUES (1, N'USD', 1.0, '2026-03-02T00:00:00.0000000Z'),
+(2, N'EGP', 0.0204, '2026-03-02T00:00:00.0000000Z'),
+(3, N'SAR', 0.2667, '2026-03-02T00:00:00.0000000Z'),
+(4, N'AED', 0.2723, '2026-03-02T00:00:00.0000000Z'),
+(5, N'KWD', 3.2614, '2026-03-02T00:00:00.0000000Z'),
+(6, N'QAR', 0.2747, '2026-03-02T00:00:00.0000000Z');
+IF EXISTS (SELECT * FROM [sys].[identity_columns] WHERE [name] IN (N'Id', N'CurrencyCode', N'RateToUsd', N'UpdatedAt') AND [object_id] = OBJECT_ID(N'[ExchangeRates]'))
+    SET IDENTITY_INSERT [ExchangeRates] OFF;
+2026-03-02 03:23:20.453 +02:00 [INF] Executed DbCommand (215ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX [IX_ExchangeRates_CurrencyCode] ON [ExchangeRates] ([CurrencyCode]);
+2026-03-02 03:23:20.665 +02:00 [INF] Executed DbCommand (207ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX [IX_Profiles_UserId] ON [Profiles] ([UserId]);
+2026-03-02 03:23:20.877 +02:00 [INF] Executed DbCommand (206ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX [IX_SimulationResults_ProfileId] ON [SimulationResults] ([ProfileId]);
+2026-03-02 03:23:21.090 +02:00 [INF] Executed DbCommand (207ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX [IX_Users_Email] ON [Users] ([Email]);
+2026-03-02 03:23:21.302 +02:00 [INF] Executed DbCommand (207ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+VALUES (N'20260301225133_InitialCreate', N'10.0.3');
+2026-03-02 03:23:21.723 +02:00 [INF] Executed DbCommand (207ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+DECLARE @result int;
+EXEC @result = sp_releaseapplock @Resource = '__EFMigrationsLock', @LockOwner = 'Session';
+SELECT @result
