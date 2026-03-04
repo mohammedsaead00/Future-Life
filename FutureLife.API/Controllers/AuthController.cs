@@ -16,6 +16,10 @@ public class AuthController : ControllerBase
         _auth = auth;
     }
 
+    private int? UserId => HttpContext.Items["UserId"] as int?;
+
+    // ── POST /auth/register ────────────────────────────────────
+
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
@@ -26,6 +30,8 @@ public class AuthController : ControllerBase
 
         return Ok(ApiResponse.Success(response, "Registration successful."));
     }
+
+    // ── POST /auth/login ───────────────────────────────────────
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
@@ -38,15 +44,53 @@ public class AuthController : ControllerBase
         return Ok(ApiResponse.Success(response, "Login successful."));
     }
 
+    // ── POST /auth/refresh ─────────────────────────────────────
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenDto dto)
+    {
+        if (!ModelState.IsValid) return BadRequest(ApiResponse.Fail("Invalid input."));
+
+        var (success, error, accessToken) = await _auth.RefreshAsync(dto.RefreshToken);
+        if (!success) return Unauthorized(ApiResponse.Fail(error!));
+
+        return Ok(ApiResponse.Success(new { accessToken }, "Token refreshed."));
+    }
+
+    // ── POST /auth/logout ──────────────────────────────────────
+
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        if (UserId == null) return Unauthorized(ApiResponse.Fail("Unauthorized."));
+
+        await _auth.LogoutAsync(UserId.Value);
+        return Ok(ApiResponse.Success<object>(null, "Logged out successfully."));
+    }
+
+    // ── GET /auth/me ───────────────────────────────────────────
+
     [HttpGet("me")]
     public async Task<IActionResult> Me()
     {
-        var userId = HttpContext.Items["UserId"] as int?;
-        if (userId == null) return Unauthorized(ApiResponse.Fail("Unauthorized."));
+        if (UserId == null) return Unauthorized(ApiResponse.Fail("Unauthorized."));
 
-        var user = await _auth.GetByIdAsync(userId.Value);
+        var user = await _auth.GetByIdAsync(UserId.Value);
         if (user == null) return NotFound(ApiResponse.Fail("User not found."));
 
         return Ok(ApiResponse.Success(AuthService.MapUser(user)));
+    }
+
+    // ── PATCH /auth/profile ────────────────────────────────────
+
+    [HttpPatch("profile")]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateUserDto dto)
+    {
+        if (UserId == null) return Unauthorized(ApiResponse.Fail("Unauthorized."));
+
+        var (success, error, user) = await _auth.UpdateProfileAsync(UserId.Value, dto);
+        if (!success) return NotFound(ApiResponse.Fail(error!));
+
+        return Ok(ApiResponse.Success(user, "Profile updated."));
     }
 }

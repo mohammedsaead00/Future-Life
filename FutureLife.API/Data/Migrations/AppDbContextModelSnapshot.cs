@@ -194,6 +194,15 @@ namespace FutureLife.API.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<double>("BurnoutRisk")
+                        .HasColumnType("float");
+
+                    b.Property<double>("CareerGrowthIndex")
+                        .HasColumnType("float");
+
+                    b.Property<double>("CareerStagnationRisk")
+                        .HasColumnType("float");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -201,19 +210,100 @@ namespace FutureLife.API.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ProfileId")
+                    b.Property<double>("EnergyDepletionRisk")
+                        .HasColumnType("float");
+
+                    b.Property<double>("EnergyScore10Y")
+                        .HasColumnType("float");
+
+                    b.Property<double>("EnergyScore1Y")
+                        .HasColumnType("float");
+
+                    b.Property<double>("EnergyScore5Y")
+                        .HasColumnType("float");
+
+                    b.Property<double>("FinancialCollapseRisk")
+                        .HasColumnType("float");
+
+                    b.Property<double>("HealthScore10Y")
+                        .HasColumnType("float");
+
+                    b.Property<double>("HealthScore1Y")
+                        .HasColumnType("float");
+
+                    b.Property<double>("HealthScore5Y")
+                        .HasColumnType("float");
+
+                    b.Property<string>("InputJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("IsolationRisk")
+                        .HasColumnType("float");
+
+                    b.Property<double>("LifeStrategyScore")
+                        .HasColumnType("float");
+
+                    b.Property<double>("MonthlySavings")
+                        .HasColumnType("float");
+
+                    b.Property<string>("MonthlySnapshotsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<double>("NetWorth10Y")
+                        .HasColumnType("float");
+
+                    b.Property<double>("OverallRiskIndex")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("ProfileId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ProjectionYears")
+                    b.Property<double>("PromotionProbability")
+                        .HasColumnType("float");
+
+                    b.Property<double>("SalaryMultiplier")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Savings10Y")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Savings1Y")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Savings5Y")
+                        .HasColumnType("float");
+
+                    b.Property<double>("SocialBalanceScore")
+                        .HasColumnType("float");
+
+                    b.Property<double>("StudyHours10Y")
+                        .HasColumnType("float");
+
+                    b.Property<double>("StudyHours1Y")
+                        .HasColumnType("float");
+
+                    b.Property<double>("StudyHours5Y")
+                        .HasColumnType("float");
+
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<string>("ResultJson")
+                    b.Property<string>("YearlySnapshotsJson")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ProfileId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("SimulationResults");
                 });
@@ -225,6 +315,9 @@ namespace FutureLife.API.Data.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Avatar")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -239,11 +332,17 @@ namespace FutureLife.API.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PreferredCurrency")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RefreshToken")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -270,13 +369,17 @@ namespace FutureLife.API.Data.Migrations
 
             modelBuilder.Entity("FutureLife.API.Models.SimulationResult", b =>
                 {
-                    b.HasOne("FutureLife.API.Models.Profile", "Profile")
+                    b.HasOne("FutureLife.API.Models.Profile", null)
                         .WithMany("SimulationResults")
-                        .HasForeignKey("ProfileId")
+                        .HasForeignKey("ProfileId");
+
+                    b.HasOne("FutureLife.API.Models.User", "User")
+                        .WithMany("SimulationResults")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Profile");
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("FutureLife.API.Models.Profile", b =>
@@ -287,6 +390,8 @@ namespace FutureLife.API.Data.Migrations
             modelBuilder.Entity("FutureLife.API.Models.User", b =>
                 {
                     b.Navigation("Profiles");
+
+                    b.Navigation("SimulationResults");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,235 +1,263 @@
-using FutureLife.API.Models;
+using FutureLife.API.DTOs;
+using System.Text.Json;
 
 namespace FutureLife.API.Services;
 
 public class LifeEngineService
 {
-    public FinanceProjection CalculateFinance(Profile profile, int years, decimal exchangeRate = 1m)
+    private static readonly Dictionary<string, double> CareerGrowthMultipliers = new()
     {
-        var yearlyData = new List<YearlyFinanceData>();
-        decimal savings = profile.CurrentSavings;
-        decimal income = profile.MonthlyIncome * 12;
-        decimal expenses = profile.MonthlyExpenses * 12;
-        decimal rate = profile.InvestmentReturnRate;
-        decimal inflation = profile.InflationRate;
+        { "Technology",  1.25 },
+        { "Finance",     1.18 },
+        { "Healthcare",  1.12 },
+        { "Education",   1.05 },
+        { "Creative",    1.10 },
+        { "Engineering", 1.20 },
+        { "Other",       1.08 }
+    };
 
-        for (int y = 1; y <= years; y++)
+    // ── Main entry points ─────────────────────────────────────
+
+    public SimulationResultFullDto RunSimulation(SimulationInputDto input, string name = "Unnamed Scenario")
+    {
+        var finance  = CalculateFinance(input);
+        var knowledge = CalculateKnowledge(input);
+        var health   = CalculateHealth(input);
+        var career   = CalculateCareer(input);
+        var social   = CalculateSocial(input);
+        var energy   = CalculateEnergy(input);
+        var risks    = CalculateRisks(input, finance, health, career);
+        var strategy = CalculateLifeStrategy(finance, knowledge, health, career, social, energy, risks);
+
+        var yearly  = BuildYearlySnapshots(input);
+        var monthly = BuildMonthlySnapshots(input);
+
+        return new SimulationResultFullDto(
+            Id: 0, UserId: 0, Name: name,
+            // Financial
+            Savings1Y:      finance.Savings1Y,
+            Savings5Y:      finance.Savings5Y,
+            Savings10Y:     finance.Savings10Y,
+            MonthlySavings: finance.MonthlySavings,
+            NetWorth10Y:    finance.NetWorth10Y,
+            Currency:       input.Currency,
+            // Knowledge
+            StudyHours1Y:   knowledge.Hours1Y,
+            StudyHours5Y:   knowledge.Hours5Y,
+            StudyHours10Y:  knowledge.Hours10Y,
+            // Health
+            HealthScore1Y:  health.Score1Y,
+            HealthScore5Y:  health.Score5Y,
+            HealthScore10Y: health.Score10Y,
+            // Career
+            CareerGrowthIndex:    career.GrowthIndex,
+            SalaryMultiplier:     career.SalaryMultiplier,
+            PromotionProbability: career.PromotionProb,
+            // Social
+            SocialBalanceScore: social.BalanceScore,
+            IsolationRisk:      social.IsolationRisk,
+            // Energy & Strategy
+            LifeStrategyScore: strategy,
+            EnergyScore1Y:     energy.Score1Y,
+            EnergyScore5Y:     energy.Score5Y,
+            EnergyScore10Y:    energy.Score10Y,
+            BurnoutRisk:       energy.BurnoutRisk,
+            // Risks
+            FinancialCollapseRisk:  risks.FinancialCollapse,
+            CareerStagnationRisk:   risks.CareerStagnation,
+            EnergyDepletionRisk:    risks.EnergyDepletion,
+            OverallRiskIndex:       risks.OverallRisk,
+            // Charts
+            YearlySnapshots:  yearly,
+            MonthlySnapshots: monthly,
+            CreatedAt: DateTime.UtcNow
+        );
+    }
+
+    public ParallelFuturesDto GenerateParallelFutures(SimulationInputDto input)
+    {
+        var current = RunSimulation(input, "Current Path");
+
+        // Optimized: +20% study, +15% networking, +5% saving capped at 50%, workout +1
+        var optimizedInput = input with
         {
-            decimal netContribution = income - expenses;
-            savings = (savings + netContribution) * (1 + rate);
-            decimal realSavings = savings / (decimal)Math.Pow((double)(1 + inflation), y);
-            decimal netWorth = savings;
+            DailyStudyHours   = Math.Min(input.DailyStudyHours + 2.0, 10.0),
+            SavingPercentage  = Math.Min(input.SavingPercentage + 0.05, 0.50),
+            WorkoutDaysPerWeek = Math.Min(input.WorkoutDaysPerWeek + 1, 7),
+            NetworkingHours   = Math.Min(input.NetworkingHours + 1.0, 10.0),
+            WeeklySkillHours  = Math.Min(input.WeeklySkillHours + 3.0, 20.0),
+            SocialMediaHours  = Math.Max(input.SocialMediaHours - 1.0, 0.0)
+        };
+        var optimized = RunSimulation(optimizedInput, "Optimized Path");
 
-            yearlyData.Add(new YearlyFinanceData
-            {
-                Year = y,
-                NominalSavings = Math.Round(savings * exchangeRate, 2),
-                InflationAdjustedSavings = Math.Round(realSavings * exchangeRate, 2),
-                NetWorth = Math.Round(netWorth * exchangeRate, 2)
-            });
+        // Decline: less effort across the board
+        var declineInput = input with
+        {
+            DailyStudyHours    = Math.Max(input.DailyStudyHours - 1.0, 0.0),
+            SavingPercentage   = Math.Max(input.SavingPercentage - 0.05, 0.0),
+            WorkoutDaysPerWeek = Math.Max(input.WorkoutDaysPerWeek - 1, 0),
+            NetworkingHours    = Math.Max(input.NetworkingHours - 1.0, 0.0),
+            WeeklySkillHours   = Math.Max(input.WeeklySkillHours - 2.0, 0.0),
+            SocialMediaHours   = Math.Min(input.SocialMediaHours + 2.0, 10.0)
+        };
+        var decline = RunSimulation(declineInput, "Decline Path");
+
+        return new ParallelFuturesDto(current, optimized, decline);
+    }
+
+    // ── Finance ───────────────────────────────────────────────
+
+    private record FinanceResult(double Savings1Y, double Savings5Y, double Savings10Y,
+        double MonthlySavings, double NetWorth10Y);
+
+    private static FinanceResult CalculateFinance(SimulationInputDto i)
+    {
+        double monthlySavings = i.MonthlyIncome * i.SavingPercentage;
+        double investmentRate = 0.07; // assumed annual return
+        double s = 0;
+        double s1 = 0, s5 = 0, s10 = 0;
+        for (int y = 1; y <= 10; y++)
+        {
+            s = (s + monthlySavings * 12) * (1 + investmentRate);
+            if (y == 1)  s1  = s;
+            if (y == 5)  s5  = s;
+            if (y == 10) s10 = s;
         }
-
-        return new FinanceProjection
-        {
-            InitialSavings = profile.CurrentSavings * exchangeRate,
-            FinalNetWorth = yearlyData.Last().NetWorth,
-            InflationAdjustedFinalNetWorth = yearlyData.Last().InflationAdjustedSavings,
-            YearlyBreakdown = yearlyData
-        };
+        return new(Round(s1), Round(s5), Round(s10), Round(monthlySavings), Round(s10));
     }
 
-    public CareerProjection CalculateCareer(Profile profile, int years, decimal exchangeRate = 1m)
+    // ── Knowledge ─────────────────────────────────────────────
+
+    private record KnowledgeResult(double Hours1Y, double Hours5Y, double Hours10Y);
+
+    private static KnowledgeResult CalculateKnowledge(SimulationInputDto i)
     {
-        var yearlyData = new List<YearlyCareerData>();
-        decimal salary = profile.CurrentSalary;
-        double totalLifetimeEarnings = 0;
+        double dailyHours = i.DailyStudyHours;
+        return new(Round(dailyHours * 365), Round(dailyHours * 365 * 5), Round(dailyHours * 365 * 10));
+    }
 
-        for (int y = 1; y <= years; y++)
+    // ── Health ────────────────────────────────────────────────
+
+    private record HealthResult(double Score1Y, double Score5Y, double Score10Y);
+
+    private static HealthResult CalculateHealth(SimulationInputDto i)
+    {
+        double base_ = (i.WorkoutDaysPerWeek / 7.0) * 60.0
+                     + (i.FamilyHours / 10.0) * 20.0
+                     + Math.Max(0, (8 - i.SocialMediaHours) / 8.0) * 20.0;
+        base_ = Math.Min(100, base_);
+        return new(Round(base_), Round(base_ * 0.98), Round(base_ * 0.95));
+    }
+
+    // ── Career ────────────────────────────────────────────────
+
+    private record CareerResult(double GrowthIndex, double SalaryMultiplier, double PromotionProb);
+
+    private static CareerResult CalculateCareer(SimulationInputDto i)
+    {
+        double fieldMultiplier = CareerGrowthMultipliers.GetValueOrDefault(i.CareerField ?? "Other", 1.08);
+        double skillScore = Math.Min(i.WeeklySkillHours / 20.0, 1.0) * 0.5
+                          + Math.Min(i.CertsPerYear / 5.0, 1.0) * 0.3
+                          + Math.Min(i.NetworkingHours / 10.0, 1.0) * 0.2;
+        double growthIndex     = Round(skillScore * fieldMultiplier, 4);
+        double salaryMultiplier = Round(1 + (growthIndex * 0.6 * 10), 2); // 10-year multiplier
+        double promotionProb   = Round(Math.Min(0.95, skillScore * fieldMultiplier * 0.5), 4);
+        return new(growthIndex, salaryMultiplier, promotionProb);
+    }
+
+    // ── Social ────────────────────────────────────────────────
+
+    private record SocialResult(double BalanceScore, double IsolationRisk);
+
+    private static SocialResult CalculateSocial(SimulationInputDto i)
+    {
+        double balance = (i.FamilyHours / 10.0) * 40.0
+                       + (i.NetworkingHours / 10.0) * 35.0
+                       + Math.Max(0, (5 - i.SocialMediaHours) / 5.0) * 25.0;
+        balance = Math.Min(100, balance);
+        double isolation = Round(Math.Max(0, 1.0 - balance / 100.0), 4);
+        return new(Round(balance, 1), isolation);
+    }
+
+    // ── Energy ────────────────────────────────────────────────
+
+    private record EnergyResult(double Score1Y, double Score5Y, double Score10Y, double BurnoutRisk);
+
+    private static EnergyResult CalculateEnergy(SimulationInputDto i)
+    {
+        double overwork = i.DailyStudyHours + i.WeeklySkillHours / 7.0;
+        double base_ = 100 - (overwork / 16.0 * 40)
+                           - (i.SocialMediaHours / 10.0 * 20)
+                           + (i.WorkoutDaysPerWeek / 7.0 * 30);
+        base_ = Math.Clamp(base_, 0, 100);
+        double burnout = Round(Math.Clamp((overwork / 16.0 * 0.6) + (i.SocialMediaHours / 10.0 * 0.2) - (i.WorkoutDaysPerWeek / 7.0 * 0.2), 0, 1), 4);
+        return new(Round(base_), Round(base_ * 0.97), Round(base_ * 0.93), burnout);
+    }
+
+    // ── Risks ─────────────────────────────────────────────────
+
+    private record RiskResult(double FinancialCollapse, double CareerStagnation, double EnergyDepletion, double OverallRisk);
+
+    private static RiskResult CalculateRisks(SimulationInputDto i, FinanceResult f, HealthResult h, CareerResult c)
+    {
+        double financialRisk = Round(Math.Clamp(1 - (i.SavingPercentage / 0.5), 0, 1), 4);
+        double careerRisk    = Round(Math.Clamp(1 - c.GrowthIndex, 0, 1), 4);
+        double energyRisk    = Round(Math.Clamp(1 - h.Score10Y / 100.0, 0, 1), 4);
+        double overall       = Round((financialRisk * 0.4 + careerRisk * 0.35 + energyRisk * 0.25), 4);
+        return new(financialRisk, careerRisk, energyRisk, overall);
+    }
+
+    private static double CalculateLifeStrategy(FinanceResult f, KnowledgeResult k, HealthResult h,
+        CareerResult c, SocialResult s, EnergyResult e, RiskResult r)
+    {
+        return Round(
+            (f.Savings10Y > 0 ? Math.Min(f.Savings10Y / 500_000, 1) * 25 : 0) +
+            (Math.Min(k.Hours10Y / 10000, 1) * 20) +
+            (h.Score10Y / 100 * 20) +
+            (c.GrowthIndex * 20) +
+            (s.BalanceScore / 100 * 15)
+        , 2);
+    }
+
+    // ── Chart Data ────────────────────────────────────────────
+
+    private static List<YearlySnapshotDto> BuildYearlySnapshots(SimulationInputDto i)
+    {
+        var snaps = new List<YearlySnapshotDto>();
+        double s = 0, monthlySavings = i.MonthlyIncome * i.SavingPercentage;
+        double healthBase = (i.WorkoutDaysPerWeek / 7.0 * 100);
+        double energyBase = Math.Clamp(100 - (i.DailyStudyHours / 16 * 40) + (i.WorkoutDaysPerWeek / 7.0 * 30), 0, 100);
+        for (int y = 1; y <= 10; y++)
         {
-            salary *= (1 + profile.AnnualSalaryGrowthRate);
-            bool promoted = new Random(y).NextDouble() < (double)profile.PromotionProbability;
-            if (promoted) salary *= (1 + profile.PromotionSalaryBoost);
-
-            totalLifetimeEarnings += (double)(salary * exchangeRate);
-
-            yearlyData.Add(new YearlyCareerData
-            {
-                Year = y,
-                Salary = Math.Round(salary * exchangeRate, 2),
-                WasPromoted = promoted
-            });
+            s = (s + monthlySavings * 12) * 1.07;
+            snaps.Add(new YearlySnapshotDto(
+                Year:        y,
+                Savings:     Round(s),
+                StudyHours:  Round(i.DailyStudyHours * 365 * y),
+                HealthScore: Round(healthBase * Math.Pow(0.99, y - 1)),
+                EnergyScore: Round(energyBase * Math.Pow(0.98, y - 1))
+            ));
         }
-
-        return new CareerProjection
-        {
-            InitialSalary = profile.CurrentSalary * exchangeRate,
-            FinalSalary = yearlyData.Last().Salary,
-            TotalLifetimeEarnings = Math.Round((decimal)totalLifetimeEarnings, 2),
-            ExpectedPromotions = yearlyData.Count(d => d.WasPromoted),
-            YearlyBreakdown = yearlyData
-        };
+        return snaps;
     }
 
-    public HealthProjection CalculateHealth(Profile profile, int years)
+    private static List<MonthlySnapshotDto> BuildMonthlySnapshots(SimulationInputDto i)
     {
-        // Energy score formula: sleep (max 30pts) + exercise (max 40pts) - stress (max 30pts)
-        double sleepScore = Math.Min(profile.SleepHoursPerNight / 8.0, 1.0) * 30;
-        double exerciseScore = Math.Min(profile.ExerciseDaysPerWeek / 5.0, 1.0) * 40;
-        double stressScore = (10 - profile.StressLevel) / 10.0 * 30;
-        double energyScore = sleepScore + exerciseScore + stressScore;
-
-        // Burnout risk: high stress + low sleep + low exercise
-        double burnoutRisk = (profile.StressLevel / 10.0 * 0.5)
-                           + ((8 - profile.SleepHoursPerNight) / 8.0 * 0.3)
-                           + ((5 - profile.ExerciseDaysPerWeek) / 5.0 * 0.2);
-        burnoutRisk = Math.Max(0, Math.Min(1, burnoutRisk));
-
-        var yearlyData = new List<YearlyHealthData>();
-        for (int y = 1; y <= years; y++)
+        var snaps = new List<MonthlySnapshotDto>();
+        double s = 0, monthlySavings = i.MonthlyIncome * i.SavingPercentage;
+        double healthBase = (i.WorkoutDaysPerWeek / 7.0 * 100);
+        for (int m = 1; m <= 12; m++)
         {
-            // Energy declines slightly with age
-            double ageFactor = 1.0 - (y * 0.005);
-            yearlyData.Add(new YearlyHealthData
-            {
-                Year = y,
-                EnergyScore = Math.Round(energyScore * ageFactor, 2),
-                BurnoutRisk = Math.Round(burnoutRisk + (y * 0.002), 4)
-            });
+            s += monthlySavings;
+            snaps.Add(new MonthlySnapshotDto(
+                Month:       m,
+                Savings:     Round(s),
+                StudyHours:  Round(i.DailyStudyHours * 30 * m),
+                HealthScore: Round(healthBase)
+            ));
         }
-
-        return new HealthProjection
-        {
-            CurrentEnergyScore = Math.Round(energyScore, 2),
-            CurrentBurnoutRisk = Math.Round(burnoutRisk, 4),
-            BurnoutRiskLevel = burnoutRisk < 0.3 ? "Low" : burnoutRisk < 0.6 ? "Medium" : "High",
-            HealthRating = energyScore >= 70 ? "Excellent" : energyScore >= 50 ? "Good" : energyScore >= 30 ? "Fair" : "Poor",
-            YearlyBreakdown = yearlyData
-        };
+        return snaps;
     }
 
-    public SocialProjection CalculateSocial(Profile profile, int years)
-    {
-        // Isolation risk: low friends + low interactions + low community
-        double isolationRisk = 1.0
-            - (Math.Min(profile.CloseFriendsCount / 5.0, 1.0) * 0.4)
-            - (Math.Min(profile.SocialInteractionsPerWeek / 7.0, 1.0) * 0.35)
-            - (profile.CommunityEngagementScore / 10.0 * 0.25);
-        isolationRisk = Math.Max(0, Math.Min(1, isolationRisk));
-
-        // Influence growth index: community × interactions growth
-        double influenceGrowth = (profile.CommunityEngagementScore / 10.0 * 0.5)
-                               + (Math.Min(profile.SocialInteractionsPerWeek / 14.0, 1.0) * 0.3)
-                               + (Math.Min(profile.CloseFriendsCount / 10.0, 1.0) * 0.2);
-
-        var yearlyData = new List<YearlySocialData>();
-        for (int y = 1; y <= years; y++)
-        {
-            yearlyData.Add(new YearlySocialData
-            {
-                Year = y,
-                IsolationRisk = Math.Round(Math.Max(0, isolationRisk - (y * 0.005)), 4),
-                InfluenceGrowthIndex = Math.Round(influenceGrowth * (1 + y * 0.03), 4)
-            });
-        }
-
-        return new SocialProjection
-        {
-            CurrentIsolationRisk = Math.Round(isolationRisk, 4),
-            IsolationRiskLevel = isolationRisk < 0.3 ? "Low" : isolationRisk < 0.6 ? "Medium" : "High",
-            CurrentInfluenceGrowthIndex = Math.Round(influenceGrowth, 4),
-            YearlyBreakdown = yearlyData
-        };
-    }
-
-    public LifeProjection GenerateProjection(Profile profile, int years, decimal exchangeRate = 1m)
-    {
-        return new LifeProjection
-        {
-            ProfileId = profile.Id,
-            ProfileName = profile.Name,
-            ProjectionYears = years,
-            GeneratedAt = DateTime.UtcNow,
-            Finance = CalculateFinance(profile, years, exchangeRate),
-            Career = CalculateCareer(profile, years, exchangeRate),
-            Health = CalculateHealth(profile, years),
-            Social = CalculateSocial(profile, years)
-        };
-    }
-}
-
-// ---- Result Models ----
-
-public class LifeProjection
-{
-    public int ProfileId { get; set; }
-    public string ProfileName { get; set; } = string.Empty;
-    public int ProjectionYears { get; set; }
-    public DateTime GeneratedAt { get; set; }
-    public FinanceProjection Finance { get; set; } = null!;
-    public CareerProjection Career { get; set; } = null!;
-    public HealthProjection Health { get; set; } = null!;
-    public SocialProjection Social { get; set; } = null!;
-}
-
-public class FinanceProjection
-{
-    public decimal InitialSavings { get; set; }
-    public decimal FinalNetWorth { get; set; }
-    public decimal InflationAdjustedFinalNetWorth { get; set; }
-    public List<YearlyFinanceData> YearlyBreakdown { get; set; } = new();
-}
-
-public class YearlyFinanceData
-{
-    public int Year { get; set; }
-    public decimal NominalSavings { get; set; }
-    public decimal InflationAdjustedSavings { get; set; }
-    public decimal NetWorth { get; set; }
-}
-
-public class CareerProjection
-{
-    public decimal InitialSalary { get; set; }
-    public decimal FinalSalary { get; set; }
-    public decimal TotalLifetimeEarnings { get; set; }
-    public int ExpectedPromotions { get; set; }
-    public List<YearlyCareerData> YearlyBreakdown { get; set; } = new();
-}
-
-public class YearlyCareerData
-{
-    public int Year { get; set; }
-    public decimal Salary { get; set; }
-    public bool WasPromoted { get; set; }
-}
-
-public class HealthProjection
-{
-    public double CurrentEnergyScore { get; set; }
-    public double CurrentBurnoutRisk { get; set; }
-    public string BurnoutRiskLevel { get; set; } = string.Empty;
-    public string HealthRating { get; set; } = string.Empty;
-    public List<YearlyHealthData> YearlyBreakdown { get; set; } = new();
-}
-
-public class YearlyHealthData
-{
-    public int Year { get; set; }
-    public double EnergyScore { get; set; }
-    public double BurnoutRisk { get; set; }
-}
-
-public class SocialProjection
-{
-    public double CurrentIsolationRisk { get; set; }
-    public string IsolationRiskLevel { get; set; } = string.Empty;
-    public double CurrentInfluenceGrowthIndex { get; set; }
-    public List<YearlySocialData> YearlyBreakdown { get; set; } = new();
-}
-
-public class YearlySocialData
-{
-    public int Year { get; set; }
-    public double IsolationRisk { get; set; }
-    public double InfluenceGrowthIndex { get; set; }
+    private static double Round(double v, int dec = 2) => Math.Round(v, dec);
 }

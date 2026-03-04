@@ -42,12 +42,12 @@ public class AppDbContext : DbContext
              .OnDelete(DeleteBehavior.Cascade);
         });
 
-        // SimulationResult
+        // SimulationResult — linked to User (not Profile)
         modelBuilder.Entity<SimulationResult>(e =>
         {
-            e.HasOne(s => s.Profile)
-             .WithMany(p => p.SimulationResults)
-             .HasForeignKey(s => s.ProfileId)
+            e.HasOne(s => s.User)
+             .WithMany(u => u.SimulationResults)
+             .HasForeignKey(s => s.UserId)
              .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -60,7 +60,7 @@ public class AppDbContext : DbContext
 
         // Seed exchange rates
         modelBuilder.Entity<ExchangeRate>().HasData(
-            new ExchangeRate { Id = 1, CurrencyCode = "USD", RateToUsd = 1.0m, UpdatedAt = new DateTime(2026, 3, 2, 0, 0, 0, DateTimeKind.Utc) },
+            new ExchangeRate { Id = 1, CurrencyCode = "USD", RateToUsd = 1.0m,    UpdatedAt = new DateTime(2026, 3, 2, 0, 0, 0, DateTimeKind.Utc) },
             new ExchangeRate { Id = 2, CurrencyCode = "EGP", RateToUsd = 0.0204m, UpdatedAt = new DateTime(2026, 3, 2, 0, 0, 0, DateTimeKind.Utc) },
             new ExchangeRate { Id = 3, CurrencyCode = "SAR", RateToUsd = 0.2667m, UpdatedAt = new DateTime(2026, 3, 2, 0, 0, 0, DateTimeKind.Utc) },
             new ExchangeRate { Id = 4, CurrencyCode = "AED", RateToUsd = 0.2723m, UpdatedAt = new DateTime(2026, 3, 2, 0, 0, 0, DateTimeKind.Utc) },

@@ -17,8 +17,15 @@ public class User
 
     public string? PreferredCurrency { get; set; } = "USD";
 
+    public string? Avatar { get; set; }
+
+    public DateTime? LastLoginAt { get; set; }
+
+    public string? RefreshToken { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     public ICollection<Profile> Profiles { get; set; } = new List<Profile>();
+    public ICollection<SimulationResult> SimulationResults { get; set; } = new List<SimulationResult>();
 }

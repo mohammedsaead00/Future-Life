@@ -1,0 +1,161 @@
+@baseUrl = http://www.futurelife.somee.com
+# لو بتجرب على جهازك استخدم ده بدل اللي فوق:
+# @baseUrl = http://localhost:5089
+
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjMiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ0ZXN0QGZ1dHVyZWxpZmUuY29tIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6Ik1vaGFtbWVkIFNhZWFkIiwiZXhwIjoxNzczMTg3ODQ4LCJpc3MiOiJGdXR1cmVMaWZlLkFQSSIsImF1ZCI6IkZ1dHVyZUxpZmUuQ2xpZW50In0.6fLF6WIIUvN7ATphQvHx5rKxUBYICk6sFEF0En1H1wg
+### ─────────────────────────────────────────────
+### 1. Register
+### ─────────────────────────────────────────────
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Mohammed Saead",
+  "email": "test@futurelife.com",
+  "password": "Test123!"
+}
+
+### ─────────────────────────────────────────────
+### 2. Login  ← انسخ accessToken من هنا
+### ─────────────────────────────────────────────
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@futurelife.com",
+  "password": "Test123!"
+}
+
+### ─────────────────────────────────────────────
+### 3. Refresh Token
+### ─────────────────────────────────────────────
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "3LeeUvcfqkWOsRbrYKQl3g==0ckZZ+w1B0Ow/O/X98onpw=="
+}
+
+### ─────────────────────────────────────────────
+### 4. Get My Profile
+### ─────────────────────────────────────────────
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{token}}
+
+### ─────────────────────────────────────────────
+### 5. Update Profile (PATCH)
+### ─────────────────────────────────────────────
+PATCH {{baseUrl}}/auth/profile
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "fullName": "Mohammed Updated",
+  "preferredCurrency": "EGP"
+}
+
+### ─────────────────────────────────────────────
+### 6. Run Simulation (no save)
+### ─────────────────────────────────────────────
+POST {{baseUrl}}/api/simulation/run
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "monthlyIncome": 5000,
+  "savingPercentage": 0.20,
+  "dailyStudyHours": 2.0,
+  "workoutDaysPerWeek": 4,
+  "currency": "USD",
+  "careerField": "Technology",
+  "weeklySkillHours": 10,
+  "certsPerYear": 2,
+  "socialMediaHours": 2.0,
+  "familyHours": 3.0,
+  "networkingHours": 2.0
+}
+
+### ─────────────────────────────────────────────
+### 7. Save Simulation Result
+### ─────────────────────────────────────────────
+POST {{baseUrl}}/api/simulation
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "My 2026 Pllan",
+  "result": {
+    "id": 0,
+    "userId": 0,
+    "name": "My 2026 Plan",
+    "savings1Y": 12852, "savings5Y": 73918, "savings10Y": 172740,
+    "monthlySavings": 1000, "netWorth10Y": 172740, "currency": "USD",
+    "studyHours1Y": 730, "studyHours5Y": 3650, "studyHours10Y": 7300,
+    "healthScore1Y": 57.1, "healthScore5Y": 55.6, "healthScore10Y": 54.3,
+    "careerGrowthIndex": 0.7, "salaryMultiplier": 5.2, "promotionProbability": 0.44,
+    "socialBalanceScore": 37.5, "isolationRisk": 0.625,
+    "lifeStrategyScore": 42.5,
+    "energyScore1Y": 60, "energyScore5Y": 55.8, "energyScore10Y": 50.8,
+    "burnoutRisk": 0.3,
+    "financialCollapseRisk": 0.6, "careerStagnationRisk": 0.3, "energyDepletionRisk": 0.46, "overallRiskIndex": 0.47,
+    "yearlySnapshots": [],
+    "monthlySnapshots": [],
+    "createdAt": "2026-03-04T00:00:00Z"
+  }
+}
+
+### ─────────────────────────────────────────────
+### 8. Parallel Futures (3 scenarios)
+### ─────────────────────────────────────────────
+POST {{baseUrl}}/api/simulation/parallel-futures
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "monthlyIncome": 5000,
+  "savingPercentage": 0.20,
+  "dailyStudyHours": 2.0,
+  "workoutDaysPerWeek": 4,
+  "currency": "USD",
+  "careerField": "Technology",
+  "weeklySkillHours": 10,
+  "certsPerYear": 2,
+  "socialMediaHours": 2.0,
+  "familyHours": 3.0,
+  "networkingHours": 2.0
+}
+
+### ─────────────────────────────────────────────
+### 9. Get Simulation History
+### ─────────────────────────────────────────────
+GET {{baseUrl}}/api/simulation/history
+Authorization: Bearer {{token}}
+
+### ─────────────────────────────────────────────
+### 10. Get Stats
+### ─────────────────────────────────────────────
+GET {{baseUrl}}/api/simulation/stats
+Authorization: Bearer {{token}}
+
+### ─────────────────────────────────────────────
+### 11. Get Simulation by ID
+### ─────────────────────────────────────────────
+GET {{baseUrl}}/api/simulation/1
+Authorization: Bearer {{token}}
+
+### ─────────────────────────────────────────────
+### 12. Delete Simulation by ID
+### ─────────────────────────────────────────────
+DELETE {{baseUrl}}/api/simulation/1
+Authorization: Bearer {{token}}
+
+### ─────────────────────────────────────────────
+### 13. Logout
+### ─────────────────────────────────────────────
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{token}}
+
+### ─────────────────────────────────────────────
+### Exchange Rates (no auth needed)
+### ─────────────────────────────────────────────
+GET {{baseUrl}}/exchange-rates
