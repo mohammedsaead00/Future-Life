@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("FutureLife.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ffa4ca21b5680e76b8efddb9ea028b095bdf9b91")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+93242af204e609368bd34f45224b0397c910e2e3")]
 [assembly: System.Reflection.AssemblyProductAttribute("FutureLife.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("FutureLife.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

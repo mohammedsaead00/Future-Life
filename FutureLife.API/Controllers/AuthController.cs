@@ -10,10 +10,12 @@ namespace FutureLife.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly AuthService _auth;
+    private readonly GoogleAuthService _googleAuth;
 
-    public AuthController(AuthService auth)
+    public AuthController(AuthService auth, GoogleAuthService googleAuth)
     {
-        _auth = auth;
+        _auth       = auth;
+        _googleAuth = googleAuth;
     }
 
     private int? UserId => HttpContext.Items["UserId"] as int?;
@@ -92,5 +94,18 @@ public class AuthController : ControllerBase
         if (!success) return NotFound(ApiResponse.Fail(error!));
 
         return Ok(ApiResponse.Success(user, "Profile updated."));
+    }
+
+    // ── POST /auth/google ──────────────────────────────────────
+
+    [HttpPost("google")]
+    public async Task<IActionResult> GoogleSignIn([FromBody] GoogleSignInDto dto)
+    {
+        if (!ModelState.IsValid) return BadRequest(ApiResponse.Fail("Invalid input."));
+
+        var (success, error, response) = await _googleAuth.SignInWithGoogleAsync(dto.IdToken);
+        if (!success) return Unauthorized(ApiResponse.Fail(error!));
+
+        return Ok(ApiResponse.Success(response, "Signed in with Google."));
     }
 }

@@ -52,6 +52,7 @@ builder.Services.AddAuthorization();
 // ── Services ──────────────────────────────────────────────
 builder.Services.AddSingleton<JwtHelper>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<GoogleAuthService>();
 builder.Services.AddScoped<ProfileService>();
 builder.Services.AddScoped<LifeEngineService>();
 builder.Services.AddScoped<CurrencyService>();

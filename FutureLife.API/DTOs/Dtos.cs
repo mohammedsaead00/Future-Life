@@ -21,6 +21,10 @@ public record RefreshTokenDto(
     [Required] string RefreshToken
 );
 
+public record GoogleSignInDto(
+    [Required] string IdToken
+);
+
 public record AuthResponseDto(
     string AccessToken,
     string RefreshToken,

@@ -169,3 +169,8 @@ F:\Future life\FutureLife.API\obj\Release\net10.0\refint\FutureLife.API.dll
 F:\Future life\FutureLife.API\obj\Release\net10.0\FutureLife.API.pdb
 F:\Future life\FutureLife.API\obj\Release\net10.0\FutureLife.API.genruntimeconfig.cache
 F:\Future life\FutureLife.API\obj\Release\net10.0\ref\FutureLife.API.dll
+F:\Future life\FutureLife.API\bin\Release\net10.0\Google.Apis.dll
+F:\Future life\FutureLife.API\bin\Release\net10.0\Google.Apis.Auth.dll
+F:\Future life\FutureLife.API\bin\Release\net10.0\Google.Apis.Core.dll
+F:\Future life\FutureLife.API\bin\Release\net10.0\System.Management.dll
+F:\Future life\FutureLife.API\bin\Release\net10.0\runtimes\win\lib\net7.0\System.Management.dll

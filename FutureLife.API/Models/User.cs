@@ -12,8 +12,11 @@ public class User
     [Required, MaxLength(200), EmailAddress]
     public string Email { get; set; } = string.Empty;
 
-    [Required]
-    public string PasswordHash { get; set; } = string.Empty;
+    // Nullable to support Google OAuth users (no password)
+    public string? PasswordHash { get; set; }
+
+    [MaxLength(100)]
+    public string? GoogleId { get; set; }
 
     public string? PreferredCurrency { get; set; } = "USD";
 

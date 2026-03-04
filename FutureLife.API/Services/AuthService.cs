@@ -22,7 +22,7 @@ public class AuthService
         if (await _db.Users.AnyAsync(u => u.Email == dto.Email.ToLower()))
             return (false, "Email already registered.", null);
 
-        var refreshToken = GenerateRefreshToken();
+        var refreshToken = CreateRefreshToken();
         var user = new User
         {
             FullName     = dto.FullName,
@@ -44,10 +44,10 @@ public class AuthService
     public async Task<(bool Success, string? Error, AuthResponseDto? Response)> LoginAsync(LoginDto dto)
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == dto.Email.ToLower());
-        if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+        if (user == null || user.PasswordHash == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             return (false, "Invalid email or password.", null);
 
-        var refreshToken = GenerateRefreshToken();
+        var refreshToken = CreateRefreshToken();
         user.RefreshToken = refreshToken;
         user.LastLoginAt  = DateTime.UtcNow;
         await _db.SaveChangesAsync();
@@ -62,8 +62,7 @@ public class AuthService
         if (user == null)
             return (false, "Invalid or expired refresh token.", null);
 
-        // Issue new pair
-        var newRefreshToken = GenerateRefreshToken();
+        var newRefreshToken = CreateRefreshToken();
         user.RefreshToken = newRefreshToken;
         await _db.SaveChangesAsync();
 
@@ -104,7 +103,7 @@ public class AuthService
         user.CreatedAt, user.LastLoginAt
     );
 
-    private static string GenerateRefreshToken() =>
+    public static string CreateRefreshToken() =>
         Convert.ToBase64String(Guid.NewGuid().ToByteArray()) +
         Convert.ToBase64String(Guid.NewGuid().ToByteArray());
 }
