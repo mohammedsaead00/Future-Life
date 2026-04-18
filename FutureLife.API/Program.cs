@@ -66,6 +66,7 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 // ── CORS ──────────────────────────────────────────────────
 builder.Services.AddCors(options =>
@@ -96,6 +97,8 @@ var app = builder.Build();
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseMiddleware<JwtMiddleware>();
 
+app.UseSwagger();
+app.UseSwaggerUI();
 app.UseCors();
 app.UseSerilogRequestLogging();
 app.UseAuthentication();
