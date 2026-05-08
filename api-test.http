@@ -2,7 +2,7 @@
 # لو بتجرب على جهازك استخدم ده بدل اللي فوق:
 # @baseUrl = http://localhost:5089
 
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjMiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJ0ZXN0QGZ1dHVyZWxpZmUuY29tIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvbmFtZSI6Ik1vaGFtbWVkIFNhZWFkIiwiZXhwIjoxNzczMTg3ODQ4LCJpc3MiOiJGdXR1cmVMaWZlLkFQSSIsImF1ZCI6IkZ1dHVyZUxpZmUuQ2xpZW50In0.6fLF6WIIUvN7ATphQvHx5rKxUBYICk6sFEF0En1H1wg
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjgiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9lbWFpbGFkZHJlc3MiOiJtb2hhbW1lZHNhZWFkNjQzMjMxQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJNb2hhbW1lZCBTYWVhZCIsImV4cCI6MTc3MzI3NzYwOCwiaXNzIjoiRnV0dXJlTGlmZS5BUEkiLCJhdWQiOiJGdXR1cmVMaWZlLkNsaWVudCJ9.ZZIVAEZtRI96uvrch1VdszLmuez65UgaUxWrZnaovRI
 ### ─────────────────────────────────────────────
 ### 1. Register
 ### ─────────────────────────────────────────────
@@ -11,7 +11,7 @@ Content-Type: application/json
 
 {
   "fullName": "Mohammed Saead",
-  "email": "test@futurelife.com",
+  "email": "mohammedsaead643231@gmail.com",
   "password": "Test123!"
 }
 
@@ -22,8 +22,18 @@ POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "test@futurelife.com",
+  "email": "mohammedsaead643231@gmail.com",
   "password": "Test123!"
+}
+
+### ─────────────────────────────────────────────
+### 2b. Google Sign-In (بديل الـ Login)
+### ─────────────────────────────────────────────
+POST {{baseUrl}}/auth/google
+Content-Type: application/json
+
+{
+  "idToken": "PASTE_GOOGLE_ID_TOKEN_HERE"
 }
 
 ### ─────────────────────────────────────────────
@@ -153,6 +163,17 @@ Authorization: Bearer {{token}}
 ### 13. Logout
 ### ─────────────────────────────────────────────
 POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{token}}
+
+### ─────────────────────────────────────────────
+### 14a. Email Ping (بدون Auth — لو رجع 200 الكنترولر شغال)
+### ─────────────────────────────────────────────
+GET {{baseUrl}}/api/email/ping
+
+### ─────────────────────────────────────────────
+### 14b. Send Test Email (بيبعت ايميل فوري لليوزر)
+### ─────────────────────────────────────────────
+POST {{baseUrl}}/api/email/send-test
 Authorization: Bearer {{token}}
 
 ### ─────────────────────────────────────────────
